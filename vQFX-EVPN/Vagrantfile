@@ -1,0 +1,171 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+VAGRANTFILE_API_VERSION = "2"
+
+## Generate a unique ID for this project
+UUID = [*('A'..'Z')].sample(6).join
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+    # LEAF01
+
+    ##############################
+    ## Packet Forwarding Engine ##
+    ##############################
+    config.vm.define "leaf01-pfe" do |vqfxpfe|
+        vqfxpfe.ssh.insert_key = false
+        vqfxpfe.vm.box = 'juniper/vqfx10k-pfe'
+
+        # DO NOT REMOVE / NO VMtools installed
+        vqfxpfe.vm.synced_folder '.', '/vagrant', disabled: true
+        vqfxpfe.vm.network 'private_network', auto_config: false, nic_type: '82540EM', virtualbox__intnet: "LEAF01-INTERNAL"
+    end
+
+    ##########################
+    ## Routing Engine  #######
+    ##########################
+    config.vm.define "leaf01" do |vqfx|
+        vqfx.ssh.insert_key = false
+        vqfx.vm.hostname = "LEAF01-RE"
+        vqfx.vm.box = 'juniper/vqfx10k-re'
+
+        # DO NOT REMOVE / NO VMtools installed
+        vqfx.vm.synced_folder '.', '/vagrant', disabled: true
+
+        # Management ports
+        vqfx.vm.network 'private_network', auto_config: false, nic_type: '82540EM', virtualbox__intnet: "LEAF01-INTERNAL"
+        vqfx.vm.network 'private_network', auto_config: false, nic_type: '82540EM', virtualbox__intnet: "#{UUID}_reserved-bridge"
+
+        ## Dataplane ports
+        vqfx.vm.network 'private_network', auto_config: false, nic_type: '82540EM', virtualbox__intnet: "L1-S1"
+        vqfx.vm.network 'private_network', auto_config: false, nic_type: '82540EM', virtualbox__intnet: "L1-S2"
+        vqfx.vm.network 'private_network', auto_config: false, nic_type: '82540EM', virtualbox__intnet: "L1-H1"
+
+      end
+
+        # LEAF02
+
+        ##############################
+        ## Packet Forwarding Engine ##
+        ##############################
+        config.vm.define "leaf02-pfe" do |vqfxpfe|
+            vqfxpfe.ssh.insert_key = false
+            vqfxpfe.vm.box = 'juniper/vqfx10k-pfe'
+
+            # DO NOT REMOVE / NO VMtools installed
+            vqfxpfe.vm.synced_folder '.', '/vagrant', disabled: true
+            vqfxpfe.vm.network 'private_network', auto_config: false, nic_type: '82540EM', virtualbox__intnet: "LEAF02-INTERNAL"
+        end
+
+        ##########################
+        ## Routing Engine  #######
+        ##########################
+        config.vm.define "leaf02" do |vqfx|
+            vqfx.ssh.insert_key = false
+            vqfx.vm.hostname = "LEAF02-RE"
+            vqfx.vm.box = 'juniper/vqfx10k-re'
+
+            # DO NOT REMOVE / NO VMtools installed
+            vqfx.vm.synced_folder '.', '/vagrant', disabled: true
+
+            # Management ports
+            vqfx.vm.network 'private_network', auto_config: false, nic_type: '82540EM', virtualbox__intnet: "LEAF02-INTERNAL"
+            vqfx.vm.network 'private_network', auto_config: false, nic_type: '82540EM', virtualbox__intnet: "#{UUID}_reserved-bridge"
+
+            ## Dataplane ports
+            vqfx.vm.network 'private_network', auto_config: false, nic_type: '82540EM', virtualbox__intnet: "L2-S1"
+            vqfx.vm.network 'private_network', auto_config: false, nic_type: '82540EM', virtualbox__intnet: "L2-S2"
+            vqfx.vm.network 'private_network', auto_config: false, nic_type: '82540EM', virtualbox__intnet: "L2-H2"
+
+        end
+
+        # SPINE01
+
+        # ##############################
+        # ## Packet Forwarding Engine ##
+        # ##############################
+        # config.vm.define "spine01-pfe" do |vqfxpfe|
+        #     vqfxpfe.ssh.insert_key = false
+        #     vqfxpfe.vm.box = 'juniper/ffp-12.1X47-D15.4-packetmode'
+        #
+        #     # DO NOT REMOVE / NO VMtools installed
+        #     vqfxpfe.vm.synced_folder '.', '/vagrant', disabled: true
+        #     vqfxpfe.vm.network 'private_network', auto_config: false, nic_type: '82540EM', virtualbox__intnet: "SPINE01-INTERNAL"
+        # end
+
+        ##########################
+        ## Routing Engine  #######
+        ##########################
+        config.vm.define "spine01" do |vqfx|
+            vqfx.ssh.insert_key = false
+            vqfx.vm.hostname = "SPINE01"
+            vqfx.vm.box = 'juniper/ffp-12.1X47-D15.4-packetmode'
+
+            # DO NOT REMOVE / NO VMtools installed
+            vqfx.vm.synced_folder '.', '/vagrant', disabled: true
+
+            # # Management ports
+            # vqfx.vm.network 'private_network', auto_config: false, nic_type: '82540EM', virtualbox__intnet: "SPINE01-INTERNAL"
+            # vqfx.vm.network 'private_network', auto_config: false, nic_type: '82540EM', virtualbox__intnet: "#{UUID}_reserved-bridge"
+
+            ## Dataplane ports
+            vqfx.vm.network 'private_network', auto_config: false, nic_type: '82540EM', virtualbox__intnet: "L1-S1"
+            vqfx.vm.network 'private_network', auto_config: false, nic_type: '82540EM', virtualbox__intnet: "L2-S1"
+
+        end
+
+        # SPINE02
+
+        # ##############################
+        # ## Packet Forwarding Engine ##
+        # ##############################
+        # config.vm.define "spine02-pfe" do |vqfxpfe|
+        #     vqfxpfe.ssh.insert_key = false
+        #     vqfxpfe.vm.box = 'juniper/vqfx10k-pfe'
+        #
+        #     # DO NOT REMOVE / NO VMtools installed
+        #     vqfxpfe.vm.synced_folder '.', '/vagrant', disabled: true
+        #     vqfxpfe.vm.network 'private_network', auto_config: false, nic_type: '82540EM', virtualbox__intnet: "SPINE02-INTERNAL"
+        # end
+
+        ##########################
+        ## Routing Engine  #######
+        ##########################
+        config.vm.define "spine02" do |vqfx|
+            vqfx.ssh.insert_key = false
+            vqfx.vm.hostname = "SPINE02-RE"
+            vqfx.vm.box = 'juniper/ffp-12.1X47-D15.4-packetmode'
+
+            # DO NOT REMOVE / NO VMtools installed
+            vqfx.vm.synced_folder '.', '/vagrant', disabled: true
+
+            # # Management ports
+            # vqfx.vm.network 'private_network', auto_config: false, nic_type: '82540EM', virtualbox__intnet: "SPINE02-INTERNAL"
+            # vqfx.vm.network 'private_network', auto_config: false, nic_type: '82540EM', virtualbox__intnet: "#{UUID}_reserved-bridge"
+
+            ## Dataplane ports
+            vqfx.vm.network 'private_network', auto_config: false, nic_type: '82540EM', virtualbox__intnet: "L1-S2"
+            vqfx.vm.network 'private_network', auto_config: false, nic_type: '82540EM', virtualbox__intnet: "L2-S2"
+
+        end
+
+        # HOST01
+
+        config.vm.define "host01" do |srv|
+            srv.vm.box = "robwc/minitrusty64"
+            srv.vm.hostname = "HOST01"
+            srv.vm.network 'private_network', ip: "192.168.1.10", nic_type: '82540EM', virtualbox__intnet: "L1-H1"
+            srv.ssh.insert_key = true
+        end
+
+        # HOST02
+
+        config.vm.define "host02" do |srv|
+            srv.vm.box = "robwc/minitrusty64"
+            srv.vm.hostname = "HOST02"
+            srv.vm.network 'private_network', ip: "192.168.1.20", nic_type: '82540EM', virtualbox__intnet: "L2-H2"
+            srv.ssh.insert_key = true
+        end
+
+end
